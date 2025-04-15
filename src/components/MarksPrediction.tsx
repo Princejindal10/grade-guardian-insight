@@ -44,7 +44,7 @@ const MarksPrediction = () => {
     field: keyof SubjectMarks,
     value: string | number
   ) => {
-    if (typeof value === "string") {
+    if (typeof value === "string" && field !== "targetGrade") {
       value = parseFloat(value) || 0;
     }
     
@@ -214,7 +214,7 @@ const MarksPrediction = () => {
                     value={subject.targetGrade}
                     onValueChange={(value) => handleInputChange(index, "targetGrade", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select grade" />
                     </SelectTrigger>
                     <SelectContent>
@@ -225,6 +225,7 @@ const MarksPrediction = () => {
                       <SelectItem value="C+">C+</SelectItem>
                       <SelectItem value="C">C</SelectItem>
                       <SelectItem value="D">D</SelectItem>
+                      <SelectItem value="F">F</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
