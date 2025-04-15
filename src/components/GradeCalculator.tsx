@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useGradeStore } from "@/lib/store";
 import { calculateRequiredGrades } from "@/lib/gradeUtils";
@@ -8,6 +7,7 @@ import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import GradeCard from "./GradeCard";
+import { standardSubjects } from "@/lib/types";
 
 const GradeCalculator = () => {
   const { toast } = useToast();
@@ -19,13 +19,10 @@ const GradeCalculator = () => {
     student?.targetGPA?.toString() || ""
   );
   
-  const [subjects, setSubjectsLocal] = useState([
-    { name: "Subject 1", credits: 4 },
-    { name: "Subject 2", credits: 4 },
-    { name: "Subject 3", credits: 3 },
-    { name: "Subject 4", credits: 3 },
-    { name: "Subject 5", credits: 3 },
-  ]);
+  const [subjects, setSubjectsLocal] = useState(standardSubjects.map(subject => ({
+    name: subject.name,
+    credits: subject.credits
+  })));
   
   const [calculatedGrades, setCalculatedGrades] = useState<any[]>([]);
   const [hasCalculated, setHasCalculated] = useState(false);
@@ -70,17 +67,6 @@ const GradeCalculator = () => {
       toast({
         title: "Error",
         description: "Student information not found",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check if any subject is missing a name
-    const hasEmptyNames = subjects.some((subject) => !subject.name.trim());
-    if (hasEmptyNames) {
-      toast({
-        title: "Invalid Subject Names",
-        description: "Please enter names for all subjects",
         variant: "destructive",
       });
       return;
@@ -151,27 +137,22 @@ const GradeCalculator = () => {
             {subjects.map((subject, index) => (
               <div key={index} className="flex space-x-4 items-center">
                 <div className="flex-1">
-                  <Label htmlFor={`subject-${index}`}>Subject Name</Label>
+                  <Label>Subject Name</Label>
                   <Input
-                    id={`subject-${index}`}
                     value={subject.name}
-                    onChange={(e) =>
-                      handleSubjectChange(index, "name", e.target.value)
-                    }
-                    placeholder="Enter subject name"
+                    readOnly
+                    className="bg-gray-100 cursor-not-allowed"
                   />
                 </div>
                 <div className="w-24">
-                  <Label htmlFor={`credits-${index}`}>Credits</Label>
+                  <Label>Credits</Label>
                   <Input
-                    id={`credits-${index}`}
                     type="number"
                     min="1"
                     max="6"
                     value={subject.credits}
-                    onChange={(e) =>
-                      handleSubjectChange(index, "credits", e.target.value)
-                    }
+                    readOnly
+                    className="bg-gray-100 cursor-not-allowed"
                   />
                 </div>
               </div>
