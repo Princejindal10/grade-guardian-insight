@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+                edu: {
+                    primary: '#3b82f6',
+                    secondary: '#9b87f5',
+                    accent: '#7E69AB',
+                    light: '#E5DEFF',
+                    dark: '#1A1F2C',
+                },
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
