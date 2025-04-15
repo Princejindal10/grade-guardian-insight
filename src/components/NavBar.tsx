@@ -1,49 +1,125 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { useGradeStore } from "@/lib/store";
-import { BookOpen } from "lucide-react";
-import { Button } from "./ui/button";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore, useGradeStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { 
+  LayoutDashboard, 
+  LineChart, 
+  BookOpen, 
+  LogOut, 
+  Menu, 
+  X 
+} from "lucide-react";
+import { useState } from "react";
 
 const NavBar = () => {
-  const location = useLocation();
-  const student = useGradeStore((state) => state.student);
-  
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuthStore();
+  const { student } = useGradeStore();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const navItems = [
+    {
+      name: "Dashboard",
+      icon: <LayoutDashboard size={18} />,
+      path: "/dashboard",
+    },
+    {
+      name: "Grade Prediction",
+      icon: <LineChart size={18} />,
+      path: "/prediction",
+    },
+    {
+      name: "Study Advice",
+      icon: <BookOpen size={18} />,
+      path: "/study-advice",
+    },
+  ];
+
   return (
-    <nav className="bg-edu-primary text-white shadow-md w-full p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2 text-white no-underline">
-          <BookOpen className="h-6 w-6" />
-          <span className="font-bold text-xl">Grade Guardian</span>
-        </Link>
-        
-        {student && (
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex space-x-4">
-              <Link to="/dashboard">
-                <Button 
-                  variant={location.pathname === "/dashboard" ? "secondary" : "ghost"} 
-                  className="text-white hover:text-white hover:bg-edu-accent"
-                >
-                  Dashboard
-                </Button>
+    <header className="bg-white border-b border-gray-200">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo and Title */}
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <span className="text-2xl font-bold text-edu-primary">Grade<span className="text-edu-dark">Pro</span></span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="flex items-center space-x-1 text-sm font-medium text-gray-600 hover:text-edu-primary transition-colors"
+              >
+                {item.icon}
+                <span>{item.name}</span>
               </Link>
-              <Link to="/prediction">
-                <Button 
-                  variant={location.pathname === "/prediction" ? "secondary" : "ghost"} 
-                  className="text-white hover:text-white hover:bg-edu-accent"
-                >
-                  Marks Prediction
+            ))}
+          </nav>
+
+          {/* User Actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            {currentUser && (
+              <>
+                <div className="text-sm font-medium">
+                  <span className="text-gray-500">Hello,</span> {currentUser.name.split(' ')[0]}
+                </div>
+                <Button variant="outline" size="sm" onClick={handleLogout} className="flex items-center space-x-1">
+                  <LogOut size={16} />
+                  <span>Logout</span>
                 </Button>
-              </Link>
-            </div>
-            
-            <div className="px-4 py-2 rounded-full bg-edu-accent text-sm font-medium">
-              {student.name}
-            </div>
+              </>
+            )}
           </div>
-        )}
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-gray-600"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
-    </nav>
+
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-white border-t border-gray-100 py-3">
+          <div className="container mx-auto px-4 space-y-3">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="flex items-center space-x-2 py-2 text-gray-600 hover:text-edu-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            ))}
+            {currentUser && (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center space-x-2 py-2 w-full text-left text-gray-600 hover:text-edu-primary transition-colors"
+              >
+                <LogOut size={18} />
+                <span>Logout</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 
