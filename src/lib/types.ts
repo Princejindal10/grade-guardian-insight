@@ -1,4 +1,3 @@
-
 // Define types for our grade predictor application
 
 export interface Student {
@@ -44,13 +43,12 @@ export interface Subject {
   code?: string;
 }
 
-// Standard subjects
+// Standard subjects - fixed to the 4 required subjects
 export const standardSubjects: Subject[] = [
   { name: "Design and Analysis of Algorithms", credits: 4, code: "CS301" },
   { name: "Computer Networks", credits: 4, code: "CS302" },
   { name: "Software Engineering", credits: 3, code: "CS303" },
-  { name: "Cloud Computing", credits: 3, code: "CS304" },
-  { name: "Database Management Systems", credits: 4, code: "CS305" }
+  { name: "Cloud Computing", credits: 3, code: "CS304" }
 ];
 
 export interface StudyAdvice {
@@ -59,4 +57,3 @@ export interface StudyAdvice {
   focusAreas: string[];
   studyStrategies: string[];
 }
-
