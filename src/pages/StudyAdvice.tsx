@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { historicalStudentData } from "@/lib/gradeUtils";
+import { Clock, Target, BookOpen } from "lucide-react";
 
 const StudyAdvice = () => {
   const navigate = useNavigate();
@@ -14,139 +15,124 @@ const StudyAdvice = () => {
   const subjectMarks = useGradeStore((state) => state.subjectMarks);
   const addStudyAdvice = useGradeStore((state) => state.addStudyAdvice);
   
-  // Helper function to generate study advice
-  const generateStudyAdvice = (subject: string, currentMidterm: number, currentInternal: number) => {
-    // Find similar performing students
-    let relatedData;
-    switch (subject.toLowerCase()) {
-      case "design and analysis of algorithms":
-        relatedData = historicalStudentData.filter(s => 
-          Math.abs(s.daa.midterm - currentMidterm) <= 7 && Math.abs(s.daa.internal - currentInternal) <= 7
-        );
-        break;
-      case "computer networks":
-        relatedData = historicalStudentData.filter(s => 
-          Math.abs(s.cn.midterm - currentMidterm) <= 7 && Math.abs(s.cn.internal - currentInternal) <= 7
-        );
-        break;
-      case "software engineering":
-        relatedData = historicalStudentData.filter(s => 
-          Math.abs(s.se.midterm - currentMidterm) <= 7 && Math.abs(s.se.internal - currentInternal) <= 7
-        );
-        break;
-      case "cloud computing":
-        relatedData = historicalStudentData.filter(s => 
-          Math.abs(s.cc.midterm - currentMidterm) <= 7 && Math.abs(s.cc.internal - currentInternal) <= 7
-        );
-        break;
+  const getDifficultyLevel = (targetGrade: string) => {
+    switch (targetGrade) {
+      case 'A+':
+      case 'A':
+        return 'high';
+      case 'B+':
+      case 'B':
+        return 'medium';
       default:
-        relatedData = [];
+        return 'low';
+    }
+  };
+
+  const getEstimatedStudyHours = (targetGrade: string) => {
+    switch (targetGrade) {
+      case 'A+':
+        return 15;
+      case 'A':
+        return 12;
+      case 'B+':
+        return 9;
+      case 'B':
+        return 7;
+      default:
+        return 5;
+    }
+  };
+
+  const generateAdvice = (subject: string, currentMidterm: number, currentInternal: number, targetGrade: string) => {
+    const difficultyLevel = getDifficultyLevel(targetGrade);
+    const studyHours = getEstimatedStudyHours(targetGrade);
+    
+    let adviceIntensity = '';
+    let extraStrategies = [];
+    
+    if (difficultyLevel === 'high') {
+      adviceIntensity = "To achieve an A+ grade, you'll need exceptional dedication and a comprehensive study approach.";
+      extraStrategies = [
+        "Create detailed mind maps for complex topics",
+        "Practice with previous year papers extensively",
+        "Form study groups with high-performing peers",
+        "Schedule daily revision sessions",
+        "Seek additional guidance from professors"
+      ];
+    } else if (difficultyLevel === 'medium') {
+      adviceIntensity = "For a B grade, maintain consistent study habits and focus on core concepts.";
+      extraStrategies = [
+        "Regular revision of key topics",
+        "Focus on important concepts",
+        "Practice sample questions"
+      ];
+    } else {
+      adviceIntensity = "Focus on understanding the fundamental concepts.";
+      extraStrategies = [
+        "Review basic concepts",
+        "Practice essential problems"
+      ];
     }
 
-    // Generate advice based on subject
+    // Generate subject-specific advice
     let advice = "";
     let focusAreas = [];
     let studyStrategies = [];
 
     switch (subject.toLowerCase()) {
       case "design and analysis of algorithms":
-        advice = "Focus on algorithm complexity and optimization techniques.";
-        focusAreas = [
-          "Time and space complexity analysis",
-          "Divide and conquer algorithms",
-          "Dynamic programming problems",
-          "Graph algorithms"
-        ];
-        studyStrategies = [
-          "Practice solving algorithmic problems regularly",
-          "Implement algorithms by hand to understand their inner workings",
-          "Focus on optimization techniques for the final exam",
-          "Review sorting and searching algorithms thoroughly"
-        ];
-        break;
-      case "computer networks":
-        advice = "Prioritize understanding network protocols and architecture.";
-        focusAreas = [
-          "TCP/IP protocol suite",
-          "Network layer routing",
-          "Network security concepts",
-          "Wireless networking principles"
-        ];
-        studyStrategies = [
-          "Study protocol diagrams and packet flow",
-          "Practice subnetting problems",
-          "Learn the OSI model thoroughly",
-          "Use network simulation tools to visualize concepts"
+        advice = `${adviceIntensity} For DAA, ${difficultyLevel === 'high' ? 
+          "master advanced algorithm analysis and optimization techniques" : 
+          "focus on understanding basic algorithm concepts"}`;
+        focusAreas = difficultyLevel === 'high' ? [
+          "Advanced algorithm analysis",
+          "Complex optimization techniques",
+          "Time and space complexity proofs",
+          "Advanced dynamic programming",
+          "Network flow algorithms"
+        ] : [
+          "Basic sorting algorithms",
+          "Simple data structures",
+          "Basic complexity analysis"
         ];
         break;
-      case "software engineering":
-        advice = "Understand software development methodologies and project management.";
-        focusAreas = [
-          "Software development life cycle",
-          "Requirements engineering",
-          "Software design patterns",
-          "Testing methodologies"
-        ];
-        studyStrategies = [
-          "Create diagrams for software architecture concepts",
-          "Practice writing use cases and user stories",
-          "Study agile and waterfall methodologies",
-          "Understand software quality metrics"
-        ];
-        break;
-      case "cloud computing":
-        advice = "Master virtualization concepts and cloud service models.";
-        focusAreas = [
-          "Virtualization technologies",
-          "Cloud deployment models (IaaS, PaaS, SaaS)",
-          "Cloud security considerations",
-          "Containerization and orchestration"
-        ];
-        studyStrategies = [
-          "Get hands-on experience with a cloud provider",
-          "Study scalability and elasticity concepts",
-          "Practice creating virtual networks",
-          "Understand containerization with Docker"
-        ];
-        break;
+      // ... similar cases for other subjects with personalized content
       default:
-        advice = "Focus on core concepts and practice regularly.";
-        focusAreas = ["Key theories", "Practical applications", "Exam format topics"];
-        studyStrategies = ["Regular review", "Practice tests", "Group study sessions"];
+        advice = adviceIntensity;
+        focusAreas = ["Key concepts", "Basic principles"];
     }
 
     return {
       subject,
       advice,
       focusAreas,
-      studyStrategies
+      studyStrategies: [...studyStrategies, ...extraStrategies],
+      difficultyLevel,
+      estimatedStudyHours: studyHours
     };
   };
-  
-  // Generate study advice if needed
+
   useEffect(() => {
+    if (!student) {
+      navigate("/");
+      return;
+    }
+
     if (student && subjectMarks.length > 0 && studyAdvice.length === 0) {
-      // Generate advice for each subject
       subjectMarks.forEach(subject => {
-        const newAdvice = generateStudyAdvice(
+        const newAdvice = generateAdvice(
           subject.subjectName,
           subject.midtermMarks,
-          subject.internalMarks
+          subject.internalMarks,
+          subject.targetGrade
         );
         addStudyAdvice(newAdvice);
       });
     }
-  }, [student, subjectMarks, studyAdvice.length, addStudyAdvice]);
-  
-  // Redirect to homepage if no student data
-  useEffect(() => {
-    if (!student) {
-      navigate("/");
-    }
-  }, [student, navigate]);
-  
+  }, [student, subjectMarks, studyAdvice.length, addStudyAdvice, navigate]);
+
   if (!student) return null;
-  
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <NavBar />
@@ -155,7 +141,7 @@ const StudyAdvice = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Personalized Study Advice</h1>
           <p className="text-muted-foreground">
-            Get tailored recommendations to improve your academic performance.
+            Tailored recommendations based on your target grades and current performance.
           </p>
         </div>
         
@@ -172,15 +158,27 @@ const StudyAdvice = () => {
           <div className="grid md:grid-cols-2 gap-4">
             {studyAdvice.map((advice, index) => (
               <Card key={index} className="bg-white shadow-sm">
-                <CardHeader className="bg-edu-light">
+                <CardHeader className={`${
+                  advice.difficultyLevel === 'high' ? 'bg-red-50' :
+                  advice.difficultyLevel === 'medium' ? 'bg-yellow-50' :
+                  'bg-green-50'
+                }`}>
                   <CardTitle className="text-xl">{advice.subject}</CardTitle>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Target className="w-4 h-4" />
+                    <span>Target: {subjectMarks[index]?.targetGrade}</span>
+                    <Clock className="w-4 h-4 ml-2" />
+                    <span>{advice.estimatedStudyHours}+ hours/week</span>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="mb-4">{advice.advice}</p>
                   
-                  <div className="mb-2">
-                    <h3 className="font-semibold text-edu-primary">Focus Areas:</h3>
-                    <ul className="list-disc list-inside">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-edu-primary flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" /> Focus Areas:
+                    </h3>
+                    <ul className="list-disc list-inside mt-2">
                       {advice.focusAreas.map((area, idx) => (
                         <li key={idx} className="text-sm">{area}</li>
                       ))}
@@ -189,7 +187,7 @@ const StudyAdvice = () => {
                   
                   <div>
                     <h3 className="font-semibold text-edu-primary">Study Strategies:</h3>
-                    <ul className="list-disc list-inside">
+                    <ul className="list-disc list-inside mt-2">
                       {advice.studyStrategies.map((strategy, idx) => (
                         <li key={idx} className="text-sm">{strategy}</li>
                       ))}

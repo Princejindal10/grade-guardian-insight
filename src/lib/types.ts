@@ -1,4 +1,3 @@
-
 // Define types for our grade predictor application
 
 export interface Student {
@@ -63,5 +62,6 @@ export interface StudyAdvice {
   advice: string;
   focusAreas: string[];
   studyStrategies: string[];
+  difficultyLevel: 'high' | 'medium' | 'low';
+  estimatedStudyHours: number;
 }
-
