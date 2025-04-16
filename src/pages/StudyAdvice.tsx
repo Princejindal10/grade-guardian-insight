@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGradeStore } from "@/lib/store";
@@ -15,7 +14,7 @@ const StudyAdvice = () => {
   const subjectMarks = useGradeStore((state) => state.subjectMarks);
   const addStudyAdvice = useGradeStore((state) => state.addStudyAdvice);
   
-  const getDifficultyLevel = (targetGrade: string) => {
+  const getDifficultyLevel = (targetGrade: string): "high" | "medium" | "low" => {
     switch (targetGrade) {
       case 'A+':
       case 'A':
@@ -74,7 +73,6 @@ const StudyAdvice = () => {
       ];
     }
 
-    // Generate subject-specific advice
     let advice = "";
     let focusAreas = [];
     let studyStrategies = [];
@@ -96,7 +94,6 @@ const StudyAdvice = () => {
           "Basic complexity analysis"
         ];
         break;
-      // ... similar cases for other subjects with personalized content
       default:
         advice = adviceIntensity;
         focusAreas = ["Key concepts", "Basic principles"];
