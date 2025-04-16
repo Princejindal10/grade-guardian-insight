@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useGradeStore } from "@/lib/store";
 import { calculateRequiredGrades } from "@/lib/gradeUtils";
@@ -9,12 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import GradeCard from "./GradeCard";
 import { standardSubjects } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
 
 const GradeCalculator = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const student = useGradeStore((state) => state.student);
   const setTargetGPA = useGradeStore((state) => state.setTargetGPA);
   const setSubjects = useGradeStore((state) => state.setSubjects);
+  const setSubjectMarks = useGradeStore((state) => state.setSubjectMarks);
   
   const [targetGPA, setTargetGPALocal] = useState<string>(
     student?.targetGPA?.toString() || ""
@@ -73,7 +75,6 @@ const GradeCalculator = () => {
       return;
     }
     
-    // Check if credits are valid
     const hasInvalidCredits = subjects.some(
       (subject) => subject.credits <= 0 || subject.credits > 6
     );
@@ -86,19 +87,34 @@ const GradeCalculator = () => {
       return;
     }
     
-    // Save target GPA
     setTargetGPA(gpaValue);
     
-    // Calculate required grades
     const results = calculateRequiredGrades(
       student.currentCGPA,
       gpaValue,
       subjects
     );
     
+    const initialMarks = results.map((subject) => ({
+      subjectName: subject.subjectName,
+      credits: subject.credits,
+      midtermMarks: 0,
+      internalMarks: 0,
+      maxMidterm: 30,
+      maxInternal: 30,
+      maxEndterm: 40,
+      targetGrade: subject.requiredGrade,
+      requiredEndtermMarks: null,
+    }));
+
     setCalculatedGrades(results);
     setSubjects(results);
+    setSubjectMarks(initialMarks);
     setHasCalculated(true);
+  };
+  
+  const handleProceedToPrediction = () => {
+    navigate("/prediction");
   };
   
   return (
@@ -177,6 +193,12 @@ const GradeCalculator = () => {
               <GradeCard key={index} gradeInfo={grade} />
             ))}
           </div>
+          <Button 
+            onClick={handleProceedToPrediction}
+            className="w-full bg-edu-primary hover:bg-edu-accent mt-4"
+          >
+            Proceed to Grade Prediction
+          </Button>
         </div>
       )}
     </div>

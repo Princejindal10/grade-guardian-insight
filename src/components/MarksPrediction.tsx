@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useGradeStore } from "@/lib/store";
 import { EndtermRequirement, SubjectMarks } from "@/lib/types";
@@ -20,16 +19,16 @@ const MarksPrediction = () => {
   const [initialized, setInitialized] = useState(false);
   
   useEffect(() => {
-    // Initialize subject marks if they don't exist
+    // Only initialize if there are no existing marks
     if (!initialized && subjects.length > 0 && subjectMarks.length === 0) {
       const initialMarks: SubjectMarks[] = subjects.map((subject) => ({
         subjectName: subject.subjectName,
         credits: subject.credits,
         midtermMarks: 0,
         internalMarks: 0,
-        maxMidterm: 30, // Default max for midterm
-        maxInternal: 30, // Default max for internal
-        maxEndterm: 40, // Default max for end term
+        maxMidterm: 30,
+        maxInternal: 30,
+        maxEndterm: 40,
         targetGrade: subject.requiredGrade,
         requiredEndtermMarks: null,
       }));
