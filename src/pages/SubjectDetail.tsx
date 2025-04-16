@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { calculateRequiredEndTermMarks } from "@/lib/gradeUtils";
+import { EndtermRequirement } from "@/lib/types";
 
 const SubjectDetail = () => {
   const { id } = useParams();
@@ -14,6 +15,7 @@ const SubjectDetail = () => {
   const subjectMarks = useGradeStore((state) => state.subjectMarks);
   
   const [selectedSubject, setSelectedSubject] = useState<any>(null);
+  const [requiredEndTermMarks, setRequiredEndTermMarks] = useState<EndtermRequirement | null>(null);
   
   useEffect(() => {
     if (!student) {
@@ -29,11 +31,13 @@ const SubjectDetail = () => {
     }
     
     setSelectedSubject(subject);
+    
+    // Calculate required end term marks
+    const result = calculateRequiredEndTermMarks(subject);
+    setRequiredEndTermMarks(result);
   }, [student, id, navigate, subjectMarks]);
   
-  if (!selectedSubject) return null;
-  
-  const requiredEndTermMarks = calculateRequiredEndTermMarks(selectedSubject);
+  if (!selectedSubject || !requiredEndTermMarks) return null;
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -70,11 +74,19 @@ const SubjectDetail = () => {
             <div className="mt-6">
               <h3 className="font-semibold text-edu-primary mb-2">Required End Term Marks</h3>
               <p className="text-2xl font-bold">
-                {requiredEndTermMarks.toFixed(2)} / {selectedSubject.maxEndterm}
+                {Math.round(requiredEndTermMarks.requiredMarks)} / {selectedSubject.maxEndterm}
               </p>
               <p className="text-muted-foreground mt-2">
-                You need to score these marks in the end-term exam to achieve your target grade.
+                {requiredEndTermMarks.achievable 
+                  ? "You need to score these marks in the end-term exam to achieve your target grade."
+                  : requiredEndTermMarks.message}
               </p>
+              
+              {!requiredEndTermMarks.achievable && (
+                <p className="text-destructive mt-2">
+                  Note: Based on your current performance, this grade target may be challenging to achieve.
+                </p>
+              )}
             </div>
             
             <div className="mt-6">
@@ -96,4 +108,3 @@ const SubjectDetail = () => {
 };
 
 export default SubjectDetail;
-

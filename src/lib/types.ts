@@ -1,3 +1,4 @@
+
 // Define types for our grade predictor application
 
 export interface Student {
@@ -17,6 +18,12 @@ export interface SubjectGrade {
   requiredScore: number;
 }
 
+export interface EndtermRequirement {
+  requiredMarks: number;
+  achievable: boolean;
+  message: string;
+}
+
 export interface SubjectMarks {
   subjectName: string;
   credits: number;
@@ -26,7 +33,7 @@ export interface SubjectMarks {
   maxInternal: number;
   maxEndterm: number;
   targetGrade: string;
-  requiredEndtermMarks: number | null;
+  requiredEndtermMarks: number | EndtermRequirement | null;
 }
 
 export interface GradePoint {
@@ -57,3 +64,4 @@ export interface StudyAdvice {
   focusAreas: string[];
   studyStrategies: string[];
 }
+

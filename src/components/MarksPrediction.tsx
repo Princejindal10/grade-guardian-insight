@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { useGradeStore } from "@/lib/store";
-import { SubjectMarks } from "@/lib/types";
+import { EndtermRequirement, SubjectMarks } from "@/lib/types";
 import { calculateRequiredEndTermMarks, getGradeFromPercentage } from "@/lib/gradeUtils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -75,7 +76,7 @@ const MarksPrediction = () => {
     // Calculate required end term marks with achievability check
     const result = calculateRequiredEndTermMarks(subject);
     
-    updateSubjectMark(index, { requiredEndtermMarks: result.requiredMarks });
+    updateSubjectMark(index, { requiredEndtermMarks: result });
     
     if (!result.achievable) {
       toast({
@@ -118,8 +119,8 @@ const MarksPrediction = () => {
     
     // Calculate all subjects
     const updatedMarks = subjectMarks.map((subject) => {
-      const requiredEndtermMarks = calculateRequiredEndTermMarks(subject);
-      return { ...subject, requiredEndtermMarks };
+      const result = calculateRequiredEndTermMarks(subject);
+      return { ...subject, requiredEndtermMarks: result };
     });
     
     setSubjectMarks(updatedMarks);
@@ -140,6 +141,46 @@ const MarksPrediction = () => {
       </div>
     );
   }
+  
+  const getRequiredMarksDisplay = (subject: SubjectMarks) => {
+    if (subject.requiredEndtermMarks === null) {
+      return null;
+    }
+    
+    if (typeof subject.requiredEndtermMarks === 'number') {
+      return Math.round(subject.requiredEndtermMarks);
+    }
+    
+    return Math.round(subject.requiredEndtermMarks.requiredMarks);
+  };
+  
+  const isTargetAchievable = (subject: SubjectMarks) => {
+    if (subject.requiredEndtermMarks === null) {
+      return true;
+    }
+    
+    if (typeof subject.requiredEndtermMarks === 'number') {
+      return subject.requiredEndtermMarks <= subject.maxEndterm;
+    }
+    
+    return subject.requiredEndtermMarks.achievable;
+  };
+  
+  const getAchievabilityMessage = (subject: SubjectMarks) => {
+    if (subject.requiredEndtermMarks === null) {
+      return "";
+    }
+    
+    if (typeof subject.requiredEndtermMarks === 'number') {
+      return subject.requiredEndtermMarks > subject.maxEndterm 
+        ? "Note: This target may not be achievable with your current marks."
+        : "";
+    }
+    
+    return !subject.requiredEndtermMarks.achievable 
+      ? subject.requiredEndtermMarks.message
+      : "";
+  };
   
   return (
     <div className="space-y-6">
@@ -252,15 +293,15 @@ const MarksPrediction = () => {
                   <p className="font-medium">
                     You need{" "}
                     <span className="text-lg font-bold text-edu-primary">
-                      {Math.round(subject.requiredEndtermMarks)}
+                      {getRequiredMarksDisplay(subject)}
                     </span>{" "}
                     out of {subject.maxEndterm} marks in the End Term to achieve a{" "}
                     <span className="font-bold">{subject.targetGrade}</span> grade.
                   </p>
                   
-                  {subject.requiredEndtermMarks > subject.maxEndterm && (
+                  {!isTargetAchievable(subject) && (
                     <p className="text-destructive mt-2">
-                      Note: This target may not be achievable with your current marks.
+                      {getAchievabilityMessage(subject)}
                     </p>
                   )}
                 </div>

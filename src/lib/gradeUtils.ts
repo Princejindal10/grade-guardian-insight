@@ -1,4 +1,4 @@
-import { GradeDistribution, SubjectGrade, SubjectMarks } from "./types";
+import { EndtermRequirement, GradeDistribution, SubjectGrade, SubjectMarks } from "./types";
 
 // Standard grade distribution
 export const gradeDistribution: GradeDistribution = [
@@ -109,7 +109,7 @@ function getGradeForGPA(gpa: number): string {
   return "F";
 }
 
-// New function to check if target grade is achievable
+// Function to check if target grade is achievable
 export function isGradeAchievable(
   midtermMarks: number,
   internalMarks: number,
@@ -151,7 +151,7 @@ export function isGradeAchievable(
 // Calculate required end term marks using relative grading and historical data
 export function calculateRequiredEndTermMarks(
   subjectMarks: SubjectMarks
-): { requiredMarks: number; achievable: boolean; message: string } {
+): EndtermRequirement {
   const { midtermMarks, internalMarks, maxMidterm, maxInternal, maxEndterm, targetGrade, subjectName } = subjectMarks;
 
   // First check if the target grade is achievable
