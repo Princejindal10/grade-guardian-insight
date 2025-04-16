@@ -109,18 +109,74 @@ function getGradeForGPA(gpa: number): string {
   return "F";
 }
 
+// New function to check if target grade is achievable
+export function isGradeAchievable(
+  midtermMarks: number,
+  internalMarks: number,
+  maxMidterm: number,
+  maxInternal: number,
+  maxEndterm: number,
+  targetGrade: string
+): { achievable: boolean; message: string } {
+  const totalMaxMarks = maxMidterm + maxInternal + maxEndterm;
+  const currentMarks = midtermMarks + internalMarks;
+  const currentPercentage = (currentMarks / (maxMidterm + maxInternal)) * 100;
+  const requiredPercentage = getMinPercentageForGrade(targetGrade);
+  
+  // Calculate maximum possible percentage if student gets full marks in endterm
+  const maxPossibleMarks = currentMarks + maxEndterm;
+  const maxPossiblePercentage = (maxPossibleMarks / totalMaxMarks) * 100;
+  
+  if (maxPossiblePercentage < requiredPercentage) {
+    return {
+      achievable: false,
+      message: `Even with full marks in end term (${maxEndterm}), you can only reach ${maxPossiblePercentage.toFixed(1)}%, which is below the required ${requiredPercentage}% for ${targetGrade} grade.`
+    };
+  }
+  
+  // Check if current performance is significantly below target
+  if (currentPercentage < requiredPercentage - 30) {
+    return {
+      achievable: false,
+      message: `Your current performance (${currentPercentage.toFixed(1)}%) is significantly below the required level for ${targetGrade} grade (${requiredPercentage}%). Consider setting a more realistic target.`
+    };
+  }
+  
+  return { 
+    achievable: true, 
+    message: "Target grade is achievable with good performance in end term." 
+  };
+}
+
 // Calculate required end term marks using relative grading and historical data
 export function calculateRequiredEndTermMarks(
   subjectMarks: SubjectMarks
-): number {
+): { requiredMarks: number; achievable: boolean; message: string } {
   const { midtermMarks, internalMarks, maxMidterm, maxInternal, maxEndterm, targetGrade, subjectName } = subjectMarks;
 
-  // Find similar historical performances
+  // First check if the target grade is achievable
+  const achievabilityCheck = isGradeAchievable(
+    midtermMarks,
+    internalMarks,
+    maxMidterm,
+    maxInternal,
+    maxEndterm,
+    targetGrade
+  );
+
+  if (!achievabilityCheck.achievable) {
+    return {
+      requiredMarks: maxEndterm,
+      achievable: false,
+      message: achievabilityCheck.message
+    };
+  }
+
+  // If achievable, calculate required marks using existing logic with historical data
   const similarPerformances = historicalStudentData.filter(student => {
     const subjectData = getSubjectData(student, subjectName.toLowerCase());
     if (!subjectData) return false;
 
-    // Match based on similar midterm and internal performance (within 5% range)
     const midtermPercentage = (midtermMarks / maxMidterm) * 100;
     const internalPercentage = (internalMarks / maxInternal) * 100;
     const historicalMidtermPercentage = (subjectData.midterm / 30) * 100;
@@ -131,7 +187,6 @@ export function calculateRequiredEndTermMarks(
   });
 
   if (similarPerformances.length > 0) {
-    // Calculate average required endterm score from similar performances
     const targetPerformances = similarPerformances.filter(student => 
       getSubjectData(student, subjectName.toLowerCase())?.grade === targetGrade
     );
@@ -142,17 +197,26 @@ export function calculateRequiredEndTermMarks(
         return sum + (subjectData?.endterm || 0);
       }, 0) / targetPerformances.length;
 
-      // Scale the endterm score to match the current maximum
-      return (avgEndterm / 40) * maxEndterm;
+      const scaledEndterm = (avgEndterm / 40) * maxEndterm;
+      
+      return {
+        requiredMarks: Math.min(scaledEndterm, maxEndterm),
+        achievable: true,
+        message: "Based on historical data, this target appears achievable."
+      };
     }
   }
 
-  // Fallback calculation if no similar historical data found
+  // Fallback calculation if no historical data matches
   const totalRequired = getMinPercentageForGrade(targetGrade) / 100 * (maxMidterm + maxInternal + maxEndterm);
   const currentTotal = midtermMarks + internalMarks;
   const requiredEndterm = Math.max(0, totalRequired - currentTotal);
   
-  return Math.min(requiredEndterm, maxEndterm);
+  return {
+    requiredMarks: Math.min(requiredEndterm, maxEndterm),
+    achievable: requiredEndterm <= maxEndterm,
+    message: "Calculation based on minimum percentage requirements."
+  };
 }
 
 // Helper function to get subject data from historical record

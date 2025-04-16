@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useGradeStore } from "@/lib/store";
 import { SubjectMarks } from "@/lib/types";
@@ -73,15 +72,23 @@ const MarksPrediction = () => {
       return;
     }
     
-    // Calculate required end term marks
-    const requiredEndtermMarks = calculateRequiredEndTermMarks(subject);
+    // Calculate required end term marks with achievability check
+    const result = calculateRequiredEndTermMarks(subject);
     
-    updateSubjectMark(index, { requiredEndtermMarks });
+    updateSubjectMark(index, { requiredEndtermMarks: result.requiredMarks });
     
-    toast({
-      title: "Calculation Complete",
-      description: `You need to score ${requiredEndtermMarks.toFixed(2)} marks in the end term to achieve a grade of ${subject.targetGrade} in ${subject.subjectName}`,
-    });
+    if (!result.achievable) {
+      toast({
+        title: "Warning: Grade May Not Be Achievable",
+        description: result.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Calculation Complete",
+        description: `You need ${Math.round(result.requiredMarks)} marks in the end term to achieve a grade of ${subject.targetGrade} in ${subject.subjectName}. ${result.message}`,
+      });
+    }
   };
   
   const calculateAll = () => {
