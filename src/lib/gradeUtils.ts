@@ -1,3 +1,4 @@
+
 import { GradeDistribution, SubjectGrade, SubjectMarks } from "./types";
 
 // Standard grade distribution
@@ -48,8 +49,23 @@ export function calculateRequiredGrades(
   targetGPA: number,
   subjects: Array<{ name: string; credits: number }>
 ): SubjectGrade[] {
+  // Calculate total credits
+  const totalCredits = subjects.reduce((sum, subject) => sum + subject.credits, 0);
+  
+  // Calculate weighted grades based on credits
   return subjects.map((subject) => {
-    const suggestedGrade = suggestGradeBasedOnHistoricalData(subject.name, targetGPA);
+    // Weight the grade based on subject credits and importance
+    // Higher credit subjects might need higher grades to achieve overall target GPA
+    const creditWeight = subject.credits / totalCredits;
+    
+    // Adjust the grade based on credits - higher credits need slightly higher grades
+    const creditAdjustment = subject.credits >= 4 ? 0.5 : 0;
+    
+    // Calculate adjusted target for this subject based on its credit importance
+    const subjectTargetGPA = Math.min(targetGPA * (1 + creditWeight * 0.2) + creditAdjustment, 10);
+    
+    // Get the appropriate grade based on the adjusted target GPA
+    const suggestedGrade = getGradeForGPA(subjectTargetGPA);
     const minPercentage = getMinPercentageForGrade(suggestedGrade);
     
     return {
@@ -61,8 +77,21 @@ export function calculateRequiredGrades(
   });
 }
 
+// Map GPA to grade using the grade distribution
+function getGradeForGPA(gpa: number): string {
+  if (gpa >= 9.5) return "A+";
+  if (gpa >= 8.5) return "A";
+  if (gpa >= 7.5) return "B+";
+  if (gpa >= 6.5) return "B";
+  if (gpa >= 5.5) return "C+";
+  if (gpa >= 4.5) return "C";
+  if (gpa >= 3.5) return "D";
+  return "F";
+}
+
 // Suggest grade based on historical data
 function suggestGradeBasedOnHistoricalData(subjectName: string, targetGPA: number): string {
+  // This function is not directly used anymore as we're using getGradeForGPA instead
   const availableGrades = ["A+", "A", "B+", "B", "C+", "C", "D", "F"];
   const gpaPoints = getPointsFromGrade(availableGrades[Math.min(Math.floor(targetGPA * 0.8), 7)]);
   
