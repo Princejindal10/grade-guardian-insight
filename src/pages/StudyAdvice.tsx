@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGradeStore } from "@/lib/store";
@@ -130,6 +131,10 @@ const StudyAdvice = () => {
 
   if (!student) return null;
 
+  // Filter out subjects 3, 4, and 5 (showing only first 2 subjects)
+  const filteredAdvice = studyAdvice.slice(0, 2);
+  const filteredSubjectMarks = subjectMarks.slice(0, 2);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <NavBar />
@@ -142,7 +147,7 @@ const StudyAdvice = () => {
           </p>
         </div>
         
-        {studyAdvice.length === 0 ? (
+        {filteredAdvice.length === 0 ? (
           <div className="text-center">
             <p className="text-muted-foreground mb-4">
               No study advice available. Complete your grade prediction first.
@@ -153,7 +158,7 @@ const StudyAdvice = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
-            {studyAdvice.map((advice, index) => (
+            {filteredAdvice.map((advice, index) => (
               <Card key={index} className="bg-white shadow-sm">
                 <CardHeader className={`${
                   advice.difficultyLevel === 'high' ? 'bg-red-50' :
@@ -163,7 +168,7 @@ const StudyAdvice = () => {
                   <CardTitle className="text-xl">{advice.subject}</CardTitle>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Target className="w-4 h-4" />
-                    <span>Target: {subjectMarks[index]?.targetGrade}</span>
+                    <span>Target: {filteredSubjectMarks[index]?.targetGrade}</span>
                     <Clock className="w-4 h-4 ml-2" />
                     <span>{advice.estimatedStudyHours}+ hours/week</span>
                   </div>
