@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useGradeStore } from "@/lib/store";
 import { EndtermRequirement, SubjectMarks } from "@/lib/types";
-import { calculateRequiredEndTermMarks, getGradeFromPercentage } from "@/lib/gradeUtils";
+import { calculateRequiredEndTermMarks } from "@/lib/gradeUtils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const MarksPrediction = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const subjects = useGradeStore((state) => state.subjects);
   const subjectMarks = useGradeStore((state) => state.subjectMarks);
@@ -17,7 +19,8 @@ const MarksPrediction = () => {
   const updateSubjectMark = useGradeStore((state) => state.updateSubjectMark);
   
   const [initialized, setInitialized] = useState(false);
-  
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+
   useEffect(() => {
     // Only initialize if there are no existing marks
     if (!initialized && subjects.length > 0 && subjectMarks.length === 0) {
@@ -48,6 +51,11 @@ const MarksPrediction = () => {
     }
     
     updateSubjectMark(index, { [field]: value });
+  };
+  
+  const handleSubjectSelect = (subjectIndex: string) => {
+    setSelectedSubject(subjectIndex);
+    navigate(`/subject/${subjectIndex}`);
   };
   
   const calculateRequired = (index: number) => {
@@ -190,11 +198,39 @@ const MarksPrediction = () => {
         </Button>
       </div>
       
+      <Card className="border-2 border-edu-light">
+        <CardHeader className="bg-edu-light">
+          <CardTitle>Select Subject</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Label htmlFor="subject-select">Choose a subject for detailed analysis:</Label>
+          <Select onValueChange={handleSubjectSelect} value={selectedSubject}>
+            <SelectTrigger className="w-full mt-2">
+              <SelectValue placeholder="Select a subject" />
+            </SelectTrigger>
+            <SelectContent>
+              {subjectMarks.map((subject, index) => (
+                <SelectItem key={index} value={index.toString()}>
+                  {subject.subjectName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+      
       <div className="space-y-6">
         {subjectMarks.map((subject, index) => (
           <Card key={index} className="border-2 hover:border-edu-accent transition-all duration-300">
-            <CardHeader className="bg-edu-light">
+            <CardHeader className="bg-edu-light flex flex-row items-center justify-between">
               <CardTitle>{subject.subjectName}</CardTitle>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate(`/subject/${index}`)}
+                className="bg-edu-primary text-white hover:bg-edu-accent"
+              >
+                Details
+              </Button>
             </CardHeader>
             
             <CardContent className="pt-6 space-y-4">
@@ -243,38 +279,6 @@ const MarksPrediction = () => {
                       />
                     </div>
                   </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>End Term Maximum</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={subject.maxEndterm}
-                    onChange={(e) => handleInputChange(index, "maxEndterm", e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Target Grade</Label>
-                  <Select
-                    value={subject.targetGrade}
-                    onValueChange={(value) => handleInputChange(index, "targetGrade", value)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select grade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A+">A+</SelectItem>
-                      <SelectItem value="A">A</SelectItem>
-                      <SelectItem value="B+">B+</SelectItem>
-                      <SelectItem value="B">B</SelectItem>
-                      <SelectItem value="C+">C+</SelectItem>
-                      <SelectItem value="C">C</SelectItem>
-                      <SelectItem value="D">D</SelectItem>
-                      <SelectItem value="F">F</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
             </CardContent>
